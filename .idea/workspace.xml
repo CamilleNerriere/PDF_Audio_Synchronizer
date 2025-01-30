@@ -4,24 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e6e35a4-bc79-47f4-93e9-ebb3f8e59f28" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/Noesis-app.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LICENCE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/audio_analyser/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/audio_analyser/audio_analyser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mongo_handler/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mongo_handler/db_operations.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pdf_analyser/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pdf_analyser/pdf_analyser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/synchronizer/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/synchronizer/sync_operations.py" afterDir="false" />
-    </list>
+    <list default="true" id="3e6e35a4-bc79-47f4-93e9-ebb3f8e59f28" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -55,8 +38,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/data" />
       <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/data" />
     </key>
   </component>
   <component name="SharedIndexes">
@@ -75,7 +58,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1738229843552</updated>
-      <workItem from="1738229844573" duration="5942000" />
+      <workItem from="1738229844573" duration="6242000" />
     </task>
     <servers />
   </component>
