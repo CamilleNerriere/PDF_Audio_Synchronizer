@@ -12,3 +12,5 @@ tqdm==4.67.1
 urllib3==2.3.0
 vosk==0.3.44
 websockets==14.2
+
+pydub~=0.25.1

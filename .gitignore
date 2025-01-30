@@ -2,3 +2,5 @@
 __pycache__/
 *.pyc
 .idea
+/data
+/audio_analyser/vosk-model*
