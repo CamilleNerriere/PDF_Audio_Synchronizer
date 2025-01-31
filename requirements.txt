@@ -33,3 +33,5 @@ typing_extensions==4.12.2
 urllib3==2.3.0
 vosk==0.3.44
 websockets==14.2
+
+RapidFuzz~=3.12.1

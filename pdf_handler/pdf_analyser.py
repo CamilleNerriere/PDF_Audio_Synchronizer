@@ -4,7 +4,6 @@ import re
 def generate_pdf_informations(book):
     doc = fitz.open(book)
     text_divided_by_pages = []
-    text_divided_by_blocks = []
 
     def format_text(text):
             text = text.replace('-', ' ')
@@ -14,38 +13,30 @@ def generate_pdf_informations(book):
 
     for page_number, page in enumerate(doc):
 
-        blocks  = page.get_text("blocks")
+        lines = []
 
-        for block in blocks:
-            x0, y0, x1, y1, text = block[:5]
+        text_dict = page.get_text("dict")
 
-            bloc_data = {
-                "text": format_text(text),
-                "x0" : x0,
-                "y0" : y0,
-                "x1" : x1,
-                "y1" : y1,
-            }
+        for block in text_dict["blocks"]:
+            if "lines" in block:
 
-            text_divided_by_blocks.append(bloc_data)
+                for line in block["lines"] :
+                    line_text = "". join([span["text"] for span in line["spans"]])
 
-        text = page.get_text("text")
-        lines = text.split('\n')
+                    x0, y0, x1, y1 = line["bbox"]
 
-        pages_divided_by_lines = {
-            f"page_{page_number}": {
-                f"line_{i}" : format_text(line) for i, line in enumerate(lines)
-            }
-        }
+                    line_data = {
+                        "text": format_text(line_text),
+                        "coord" : [x0, y0, x1, y1],
+                    }
 
-        text_divided_by_pages.append(pages_divided_by_lines)
+                    lines.append(line_data)
 
-    return text_divided_by_blocks
+        text_divided_by_pages.append({f"page_{page_number + 1}" : lines})
+
+    return text_divided_by_pages
 
 
-book = "../data/pdf/caroll_de_autre_cote_miroir.pdf"
-
-print(generate_pdf_informations(book))
 
 
 

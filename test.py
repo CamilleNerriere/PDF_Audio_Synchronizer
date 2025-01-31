@@ -1,6 +1,16 @@
+from audio_analyser import convert_and_retranscript
+from pdf_handler import generate_pdf_informations
 from rapidfuzz import fuzz
 import re
+import numpy as np
 
+# audio transcription
+input_file = "data/audios/carroll_de_l'autre_cote_du_miroir/6 8990 Vexée et irritée Alice s’en va mais est interrompue par un fracas dans le bois.m4a"
+audio_transcription = convert_and_retranscript(input_file)
+
+# pdf divided by pages divided by lines
+pdf_path = "data/pdf/caroll_de_autre_cote_miroir.pdf"
+pdf_text = generate_pdf_informations(pdf_path)
 
 def preprocess_text(text):
     text = re.sub(r'[^\w\s]', '', text.lower())
