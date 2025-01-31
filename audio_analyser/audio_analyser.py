@@ -2,9 +2,11 @@ import subprocess
 import wave
 import json
 from vosk import Model, KaldiRecognizer
+import os
 
 
-def convert_mp4_to_wave(input_file, output_file):
+def convert_mp4_to_wave(input_file):
+    output_file = input_file.replace(".m4a", ".wav")
     # -y : replace file if exists
     # only show errors in logs
     result = subprocess.run([
@@ -22,15 +24,19 @@ def convert_mp4_to_wave(input_file, output_file):
     else:
         print("Conversion réussie!")
 
+    return output_file
+
 
 def retranscript_audio(input_file):
 
-    model_path= "vosk-model-fr-0.22"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(base_dir, "vosk-model-fr-0.22")
     model = Model(model_path)
 
     wf = wave.open(input_file, "rb")
 
     rec = KaldiRecognizer(model, wf.getframerate())
+    rec.SetWords(True) #timestamp for every words
 
     audio_texts = []
 
@@ -39,17 +45,19 @@ def retranscript_audio(input_file):
         if len(data) == 0:
             break
         if rec.AcceptWaveform(data):
-            text_extract = json.loads(rec.Result())["text"]
-            audio_texts.append(text_extract)
-    return " ".join(audio_texts)
+            text_extract = json.loads(rec.Result())
+            if "result" in text_extract:
+                words = text_extract["result"]
+                for i in range(0, len(words), 5):
+                    group = words[i:i+5]
+                    group_text = " ".join([word["word"] for word in group])
+                    start_time = group[0]["start"]
+                    end_time = group[-1]["end"]
+                    audio_texts.append({"text": group_text, "start": start_time, "end": end_time})
+    return audio_texts
 
-input_file = "../data/audios/carroll_de_l'autre_cote_du_miroir/6 8889 Alice dit au revoir, Gros Coco dit qu’il ne la reconnaîtra pas son visage étant si commun.m4a"
-output_file = "../data/audios/carroll_de_l'autre_cote_du_miroir/6 8889 Alice dit au revoir, Gros Coco dit qu’il ne la reconnaîtra pas son visage étant si commun.wav"
+def convert_and_retranscript(input_file):
+    converted_file = convert_mp4_to_wave(input_file)
+    return retranscript_audio(converted_file)
 
-def convert_and_retranscript(input_file, output_file):
-    convert_mp4_to_wave(input_file, output_file)
-    return retranscript_audio(output_file)
 
-text = convert_and_retranscript(input_file, output_file)
-
-print(text)

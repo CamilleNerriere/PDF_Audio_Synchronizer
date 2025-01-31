@@ -1,0 +1,1 @@
+from .pdf_analyser import generate_pdf_informations
