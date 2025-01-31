@@ -22,6 +22,7 @@ pycparser==2.22
 pymongo==4.11
 PyMuPDF==1.25.2
 python-dotenv==1.0.1
+RapidFuzz==3.12.1
 requests==2.32.3
 scikit-learn==1.6.1
 scipy==1.15.1
@@ -33,5 +34,3 @@ typing_extensions==4.12.2
 urllib3==2.3.0
 vosk==0.3.44
 websockets==14.2
-
-RapidFuzz~=3.12.1
