@@ -1,64 +1,45 @@
+from http.client import HTTPException
+
+from fastapi import FastAPI, UploadFile, File, Query, Request, HTTPException
+from fastapi.responses import JSONResponse
 from audio_analyser import convert_and_retranscript
 from pdf_handler import generate_pdf_informations
 from synchronizer import synchronize_audio_to_pdf
+from utils.logger import logger
+from utils.exceptions import AudioProcessingError, PDFProcessingError
 
-from tkinter import Tk, Label
-from PIL import Image, ImageTk
+app = FastAPI()
 
-import fitz
+@app.post("/sync")
+async def sync_endpoint(pdf: UploadFile = File(...), audio: UploadFile = File(...), start_page: int = Query(..., description="Page de début"),
+    end_page: int = Query(..., description="Page de fin")):
 
-# audio transcription
-input_file = "data/audios/carroll_de_l'autre_cote_du_miroir/6 8990 Vexée et irritée Alice s’en va mais est interrompue par un fracas dans le bois.m4a"
-audio_transcription = convert_and_retranscript(input_file)
+    try:
+        audio_transcription = convert_and_retranscript(audio.file)
+        pdf_text = generate_pdf_informations(pdf.file)
+        aligned_data = synchronize_audio_to_pdf(audio_transcription, pdf_text, start_page=start_page, end_page=end_page)
 
-# pdf divided by pages divided by lines
-pdf_path = "data/pdf/caroll_de_autre_cote_miroir.pdf"
-pdf_text = generate_pdf_informations(pdf_path)
+        return {"aligned_data": aligned_data}
 
-aligned_data = synchronize_audio_to_pdf(audio_transcription, pdf_text, 89, 90)
+    except AudioProcessingError as ae:
+        logger.warning(f"[AUDIO] {ae}")
+        raise HTTPException(status_code=422, detail=str(ae))
 
+    except PDFProcessingError as pe:
+        logger.warning(f"[PDF] {pe}")
+        raise HTTPException(status_code=422, detail=str(pe))
 
-def highlight_line_in_pdf(pdf_path, aligned_data):
+    except Exception as e:
+        logger.error(f"Exception during sync : {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
 
-    doc = fitz.open(pdf_path)
-
-    #Tkinter window
-    root = Tk()
-    root.title("PDF Highlighter")
-    label = Label(root)
-    label.pack()
-
-    def highlight_next(index=0):
-        if index >= len(aligned_data):
-            doc.close()
-            return
-
-        data = aligned_data[index]
-        page_number = data["page_num"] - 1
-        rect = fitz.Rect(data["pdf_coords"])
-
-        page = doc[page_number]
-
-        highlight = page.add_highlight_annot(rect)
-        highlight.update()
-
-        temp_pdf_path = "temp_output.pdf"
-        doc.save(temp_pdf_path)
-
-        #convert image
-        pixmap = page.get_pixmap()
-        img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
-
-        # show image in label
-        img_tk = ImageTk.PhotoImage(img)
-        label.config(image=img_tk)
-        label.image = img_tk
-
-        delay = int((data["audio_end"] - data["audio_start"]) * 1000)  # Convertir en ms
-        page.delete_annot(highlight)
-        root.after(delay, highlight_next, index + 1)  # Appeler highlight_next avec index + 1
-
-    highlight_next()
-    root.mainloop()
-
-highlight_line_in_pdf(pdf_path, aligned_data)
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.exception(f"Non Handled Exception during request {request.method} {request.url}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error. Please try again later."},
+    )

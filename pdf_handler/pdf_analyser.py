@@ -1,40 +1,64 @@
 import fitz
 import re
+import tempfile
+from utils.safe_remove import safe_remove
+from utils.logger import logger
+from utils.exceptions import PDFProcessingError
 
 def generate_pdf_informations(book):
-    doc = fitz.open(book)
-    text_divided_by_pages = []
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+        temp_pdf.write(book.read())
+        temp_pdf_path = temp_pdf.name
 
-    def format_text(text):
-            text = text.replace('-', ' ')
-            text = re.sub(r"[^\w\s'’]", '', text)
-            text = text.lower()
-            return text.strip()
+        try:
+            text_divided_by_pages = []
 
-    for page_number, page in enumerate(doc):
+            def format_text(text):
+                    text = text.replace('-', ' ')
+                    text = re.sub(r"[^\w\s'’]", '', text)
+                    text = text.lower()
+                    return text.strip()
 
-        lines = []
+            try:
+                with fitz.open(temp_pdf_path) as doc:
+                    if len(doc) == 0:
+                        raise PDFProcessingError("PDF has no pages")
 
-        text_dict = page.get_text("dict")
+                    for page_number, page in enumerate(doc):
 
-        for block in text_dict["blocks"]:
-            if "lines" in block:
+                        lines = []
 
-                for line in block["lines"] :
-                    line_text = "". join([span["text"] for span in line["spans"]])
+                        text_dict = page.get_text("dict")
 
-                    x0, y0, x1, y1 = line["bbox"]
+                        for block in text_dict["blocks"]:
+                            if "lines" in block:
 
-                    line_data = {
-                        "text": format_text(line_text),
-                        "coord" : [x0, y0, x1, y1],
-                    }
+                                for line in block["lines"] :
+                                    line_text = "". join([span["text"] for span in line["spans"]])
 
-                    lines.append(line_data)
+                                    x0, y0, x1, y1 = line["bbox"]
 
-        text_divided_by_pages.append({f"page_{page_number + 1}" : lines})
+                                    line_data = {
+                                        "text": format_text(line_text),
+                                        "coord" : [x0, y0, x1, y1],
+                                    }
 
-    return text_divided_by_pages
+                                    lines.append(line_data)
+
+                        text_divided_by_pages.append({f"page_{page_number + 1}" : lines})
+
+                        if len(text_divided_by_pages)==0:
+                            raise PDFProcessingError("Unable to analyse PDF")
+            except Exception as e:
+                raise PDFProcessingError("Invalid PDF")
+
+            return text_divided_by_pages
+
+        finally:
+            try:
+                safe_remove(temp_pdf_path)
+            except Exception as e:
+                logger.warning(f"[WARN] Unable to delete {temp_pdf_path} : {e}")
 
 
 
